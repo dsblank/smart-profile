@@ -11,7 +11,7 @@ with open("helpers.py", "wb") as fp:
 import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
-from helpers import get_opik_data
+from helpers import get_opik_data, generate_ai_summary
 import comet_ml
 
 api_ml = comet_ml.API()
@@ -97,9 +97,20 @@ def banner():
         view_more = st.container(border=False)
 
     with AI_summary:
-        st.markdown(
-            body=":chart_with_upwards_trend: Worked mostly on EM, registered new model"
-        )
+        openai_api_key = st.text_input("OpenAI API Key", type="password")
+        if st.button("Generate AI Summary"):
+            result = generate_ai_summary(
+                openai_api_key=openai_api_key,
+                opik_api_key=opik_api_key,
+                comet_ml_api_key=comet_ml_api_key,
+                workspace_name=github_name
+            )
+            
+            if result.get("success"):
+                st.markdown(result["ai_summary"])
+                st.json(result["data_sources"])
+            else:
+                st.error(result.get("error"))
 
     with AI_advice:
         st.markdown(
