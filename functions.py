@@ -16,10 +16,15 @@ import comet_ml
 
 api_ml = comet_ml.API()
 
+import os
+
 with st.sidebar:
-    github_name = st.text_input("Github name: ", value="user")
-    comet_ml_api_key = st.text_input("Comet ML API key: ", value=api_ml._client.api_key)
-    opik_api_key = st.text_input("Opik API key: ")
+    github_name = st.text_input("Github name: ", value=os.environ.get("GITHUB_NAME", "user"))
+    os.environ["GITHUB_NAME"] = github_name
+    comet_ml_api_key = st.text_input("Comet ML API key: ", value=os.environ.get("COMET_API_KEY", api_ml._client.api_key))
+    os.environ["COMET_API_KEY"] = comet_ml_api_key
+    opik_api_key = st.text_input("Opik API key: ", value=os.environ.get("OPIK_API_KEY", ""))
+    os.environ["OPIK_API_KEY"] = opik_api_key
 
 if comet_ml_api_key:
     api_ml = comet_ml.API(api_key=comet_ml_api_key)
