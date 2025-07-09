@@ -4,6 +4,102 @@ from datetime import datetime, timedelta, timezone
 from collections import Counter
 import json
 
+import openai
+        
+
+SYSTEM_PROMPT = """
+You are an expert AI/ML development analyst who specializes in understanding developer workflows, productivity patterns, and technical insights from development platform data.
+
+Your task is to analyze comprehensive user activity data from two major AI/ML platforms:
+1. **Opik** - An LLM evaluation and observability platform for AI application development
+2. **Comet ML** - An ML experiment tracking and model management platform
+
+Based on the provided data, generate a professional, insightful summary that reads like it was written by a senior AI/ML engineer who has been observing this developer's work patterns.
+
+## Analysis Focus Areas:
+
+### 1. **Development Activity & Patterns**
+- What types of AI/ML projects are they working on?
+- Recent development activity and productivity trends
+- Project focus areas and technical domains
+- Development velocity and consistency
+
+### 2. **Technical Stack & Tool Preferences**
+- Preferred frameworks (PyTorch, TensorFlow, etc.)
+- Libraries and tools being used
+- Model types and architectures
+- Development environment preferences
+
+### 3. **AI/LLM Development Insights**
+- LLM application patterns and use cases
+- Prompt engineering approaches
+- Model evaluation strategies
+- Cost optimization and efficiency
+
+### 4. **Experimentation & Methodology**
+- Experiment design patterns
+- Dataset management approaches
+- Evaluation metrics and success criteria
+- Reproducibility practices
+
+### 5. **Professional Recommendations**
+- Areas for improvement or optimization
+- Suggested tools or techniques
+- Best practices alignment
+- Growth opportunities
+
+## Response Format:
+Structure your response as a professional development summary with:
+
+**🔍 Recent Activity Overview**
+- Brief summary of what they've been working on
+- Key projects and focus areas
+
+**🛠️ Technical Stack & Preferences**
+- Frameworks, libraries, and tools
+- Development patterns observed
+
+**🤖 AI/LLM Development Insights**
+- LLM usage patterns and applications
+- Evaluation and optimization approaches
+
+**📊 Experimentation & Data Management**
+- Experiment design and tracking
+- Dataset and model management
+
+**💡 Professional Recommendations**
+- 2-3 specific, actionable suggestions
+- Growth opportunities and optimizations
+
+## Writing Style:
+- Professional yet conversational tone
+- Focus on insights rather than just data summary
+- Include specific technical details when relevant
+- Provide actionable recommendations
+- Avoid overly technical jargon
+- Make it engaging and valuable for the developer
+
+## Important Notes:
+- If data is missing from either platform, acknowledge it gracefully
+- Focus on patterns and trends rather than absolute numbers
+- Emphasize practical insights over raw statistics
+- Consider the developer's apparent skill level and experience
+- Provide forward-looking recommendations"""
+
+# Create the user prompt with the actual data
+USER_PROMPT = lambda: """
+Please analyze the following comprehensive AI/ML development data and provide insights:
+
+**Workspace:** {workspace_name}
+**Analysis Period:** Recent activity (past 3-7 days focus)
+
+**Platform Data:**
+```json
+{json.dumps(combined_data, indent=2, default=str)}
+```
+Generate a professional development summary following the format and guidelines provided in your system prompt.
+"""
+
 def get_mock_data():
     """Fallback mock data if Opik SDK is not available"""
     return {
@@ -30,19 +126,11 @@ def get_mock_data():
     }
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def get_opik_data(api_key="", workspace_name=""):
+def get_opik_data(_opik_client, _opik_api, workspace_name):
     """Get actual data from Opik SDK"""
+    client = _opik_client
+    client_api = _opik_api
     try:
-        import opik
-        from opik.rest_api.client import OpikApi
-        
-        # Initialize API client
-        client_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=api_key, workspace_name=workspace_name)
-        
-        # Initialize regular client for search_traces
-        opik.configure(api_key=api_key, workspace=workspace_name, url='https://www.comet.com/opik/api', force=True)
-        client = opik.Opik(api_key=api_key)
-        
         # Get all projects
         projects_page = client_api.projects.find_projects()
         all_projects = projects_page.content
@@ -112,33 +200,17 @@ def get_opik_data(api_key="", workspace_name=""):
             }
         }
     
-
-        
-    except ImportError:
-        st.warning("Opik SDK not installed. Install with: pip install opik")
-        return get_mock_data()
     except Exception as e:
         st.error(f"Error connecting to Opik: {str(e)}")
         return get_mock_data()
 
 
 @st.cache_data(ttl=600)  # Cache for 10 minutes
-def compile_ai_summary_data(api_key="", workspace_name=""):
+def compile_ai_summary_data(_comet_api, _opik_api, _opik_client, workspace_name):
     """Compile comprehensive user activity data for AI summary generation"""
+    client_api = _opik_api
+    client = _opik_client
     try:
-        # Add the opik SDK to the path
-        #sys.path.append('/Users/andreicautisanu/Projects/hackathon/opik/sdks/python/src')
-        
-        from opik.rest_api.client import OpikApi
-        import opik
-        
-        # Initialize API client
-        client_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=api_key, workspace_name=workspace_name)
-        
-        # Initialize regular client for search_traces
-        opik.configure(api_key=api_key, workspace=workspace_name, url='https://www.comet.com/opik/api', force=True)
-        client = opik.Opik(api_key=api_key)
-        
         # Time ranges for analysis
         seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -320,26 +392,16 @@ def compile_ai_summary_data(api_key="", workspace_name=""):
         
         return ai_summary_data
         
-    except ImportError as e:
-        st.error(f"Opik SDK not available: {e}")
-        return {"error": "SDK not available"}
     except Exception as e:
         st.error(f"Error compiling AI summary data: {e}")
         return {"error": str(e)}
 
 
 @st.cache_data(ttl=600)  # Cache for 10 minutes
-def compile_comet_ml_summary_data(api_key="", workspace_name=""):
+def compile_comet_ml_summary_data(_comet_api, workspace_name):
     """Compile comprehensive user activity data from Comet ML for AI summary generation"""
+    api = _comet_api
     try:
-        # Add the comet_ml to the path
-        #sys.path.append('/Users/andreicautisanu/Projects/hackathon/comet-python-client/comet-client-lib')
-        
-        import comet_ml
-        
-        # Initialize API client
-        api = comet_ml.API(api_key=api_key)
-        
         # Time ranges for analysis
         seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -623,7 +685,7 @@ def compile_comet_ml_summary_data(api_key="", workspace_name=""):
 
 
 @st.cache_data(ttl=1800)  # Cache for 30 minutes
-def generate_ai_summary(openai_api_key="", opik_api_key="", comet_ml_api_key="", workspace_name=""):
+def generate_ai_summary(openai_api_key, _comet_api, _opik_api, _opik_client, workspace_name):
     """
     Generate an AI summary using OpenAI based on combined data from Opik and Comet ML platforms.
     
@@ -638,8 +700,6 @@ def generate_ai_summary(openai_api_key="", opik_api_key="", comet_ml_api_key="",
     """
     try:
         # Import OpenAI
-        import openai
-        
         if not openai_api_key:
             return {"error": "OpenAI API key is required"}
         
@@ -648,10 +708,10 @@ def generate_ai_summary(openai_api_key="", opik_api_key="", comet_ml_api_key="",
         
         # Gather data from both platforms
         #st.info("🤖 Gathering data from Opik platform...")
-        opik_data = compile_ai_summary_data(api_key=opik_api_key, workspace_name=workspace_name)
+        opik_data = compile_ai_summary_data(_comet_api, _opik_api, _opik_client, workspace_name=workspace_name)
         
         #st.info("🧪 Gathering data from Comet ML platform...")
-        comet_ml_data = compile_comet_ml_summary_data(api_key=comet_ml_api_key, workspace_name=workspace_name)
+        comet_ml_data = compile_comet_ml_summary_data(_comet_api=_comet_api, workspace_name=workspace_name)
         
         # Check for errors in data collection
         if opik_data.get("error"):
@@ -668,105 +728,14 @@ def generate_ai_summary(openai_api_key="", opik_api_key="", comet_ml_api_key="",
         }
         
         # Create the system prompt for AI analysis
-        system_prompt = """You are an expert AI/ML development analyst who specializes in understanding developer workflows, productivity patterns, and technical insights from development platform data.
-
-Your task is to analyze comprehensive user activity data from two major AI/ML platforms:
-1. **Opik** - An LLM evaluation and observability platform for AI application development
-2. **Comet ML** - An ML experiment tracking and model management platform
-
-Based on the provided data, generate a professional, insightful summary that reads like it was written by a senior AI/ML engineer who has been observing this developer's work patterns.
-
-## Analysis Focus Areas:
-
-### 1. **Development Activity & Patterns**
-- What types of AI/ML projects are they working on?
-- Recent development activity and productivity trends
-- Project focus areas and technical domains
-- Development velocity and consistency
-
-### 2. **Technical Stack & Tool Preferences**
-- Preferred frameworks (PyTorch, TensorFlow, etc.)
-- Libraries and tools being used
-- Model types and architectures
-- Development environment preferences
-
-### 3. **AI/LLM Development Insights**
-- LLM application patterns and use cases
-- Prompt engineering approaches
-- Model evaluation strategies
-- Cost optimization and efficiency
-
-### 4. **Experimentation & Methodology**
-- Experiment design patterns
-- Dataset management approaches
-- Evaluation metrics and success criteria
-- Reproducibility practices
-
-### 5. **Professional Recommendations**
-- Areas for improvement or optimization
-- Suggested tools or techniques
-- Best practices alignment
-- Growth opportunities
-
-## Response Format:
-Structure your response as a professional development summary with:
-
-**🔍 Recent Activity Overview**
-- Brief summary of what they've been working on
-- Key projects and focus areas
-
-**🛠️ Technical Stack & Preferences**
-- Frameworks, libraries, and tools
-- Development patterns observed
-
-**🤖 AI/LLM Development Insights**
-- LLM usage patterns and applications
-- Evaluation and optimization approaches
-
-**📊 Experimentation & Data Management**
-- Experiment design and tracking
-- Dataset and model management
-
-**💡 Professional Recommendations**
-- 2-3 specific, actionable suggestions
-- Growth opportunities and optimizations
-
-## Writing Style:
-- Professional yet conversational tone
-- Focus on insights rather than just data summary
-- Include specific technical details when relevant
-- Provide actionable recommendations
-- Avoid overly technical jargon
-- Make it engaging and valuable for the developer
-
-## Important Notes:
-- If data is missing from either platform, acknowledge it gracefully
-- Focus on patterns and trends rather than absolute numbers
-- Emphasize practical insights over raw statistics
-- Consider the developer's apparent skill level and experience
-- Provide forward-looking recommendations"""
-
-        # Create the user prompt with the actual data
-        user_prompt = f"""Please analyze the following comprehensive AI/ML development data and provide insights:
-
-**Workspace:** {workspace_name}
-**Analysis Period:** Recent activity (past 3-7 days focus)
-
-**Platform Data:**
-```json
-{json.dumps(combined_data, indent=2, default=str)}
-```
-
-Generate a professional development summary following the format and guidelines provided in your system prompt."""
-
         st.info("🧠 Generating AI insights...")
         
         # Make the API call to OpenAI
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": USER_PROMPT()}
             ],
             max_tokens=5000,  # Reasonable length for summary
             temperature=0.3,
@@ -796,9 +765,6 @@ Generate a professional development summary following the format and guidelines 
             }
         }
         
-    except ImportError as e:
-        st.error(f"OpenAI library not available: {e}")
-        return {"error": f"OpenAI library not available: {e}"}
     except Exception as e:
         st.error(f"Error generating AI summary: {e}")
         return {"error": str(e)}

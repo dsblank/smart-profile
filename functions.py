@@ -15,23 +15,22 @@ from helpers import get_opik_data, generate_ai_summary
 import comet_ml
 import json
 
-api_ml = comet_ml.API()
-
 import os
 
 with st.sidebar:
     github_name = st.text_input("Github name: ", value=os.environ.get("GITHUB_NAME", "user"))
     os.environ["GITHUB_NAME"] = github_name
-    comet_ml_api_key = st.text_input("Comet ML API key: ", value=os.environ.get("COMET_API_KEY", api_ml._client.api_key))
-    os.environ["COMET_API_KEY"] = comet_ml_api_key
-    opik_api_key = st.text_input("Opik API key: ", value=os.environ.get("OPIK_API_KEY", ""))
-    os.environ["OPIK_API_KEY"] = opik_api_key
+    comet_api_key = st.text_input("Comet/Opik API key: ", value=os.environ.get("COMET_API_KEY", ""))
+    os.environ["COMET_API_KEY"] = comet_api_key
+    openai_api_key = st.text_input("OpenAI API Key", type="password", value=os.environ.get("OPENAI_API_KEY", ""))
+    os.environ["OPENAI_API_KEY"] = openai_api_key
 
-if comet_ml_api_key:
-    api_ml = comet_ml.API(api_key=comet_ml_api_key)
-if opik_api_key:
-    opik.configure(api_key=opik_api_key, url='https://www.comet.com/opik/api', workspace=github_name, force=True)
+if comet_api_key:
+    comet_api = comet_ml.API(api_key=comet_api_key)
+    opik.configure(api_key=comet_api_key, url='https://www.comet.com/opik/api', workspace=github_name, force=True)
     opik_client = opik.Opik()
+    opik_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=api_key, workspace_name=workspace_name)
+
 
 def banner():
     columns_1 = st.columns([0.22, 0.40, 0.02, 0.11, 0.11, 0.13])
@@ -98,12 +97,12 @@ def banner():
         view_more = st.container(border=False)
 
     with AI_summary:
-        openai_api_key = st.text_input("OpenAI API Key", type="password")
         if st.button("Generate AI Summary"):
             result = generate_ai_summary(
                 openai_api_key=openai_api_key,
-                opik_api_key=opik_api_key,
-                comet_ml_api_key=comet_ml_api_key,
+                _comet_api=comet_api,
+                _opik_api=opik_api,
+                _opik_client=opik_client,
                 workspace_name=github_name
             )
             
@@ -131,7 +130,7 @@ def opik_summary():
     st.markdown("*Over the past 3 days*")
     
     # Get data
-    data = get_opik_data(api_key=opik_api_key, workspace_name=github_name)
+    data = get_opik_data(_opik_client=opik_client, _opik_api=opik_api, workspace_name=github_name)
     
     # Create container with border styling
     with st.container(border=True):
@@ -196,13 +195,13 @@ def opik_summary():
 def em_summary():
     st.markdown("### 🔬 EM Summary")
     with st.container(border=True):
-        if comet_ml_api_key:
-            #workspaces = api_ml.get_workspaces()
-            experiments = api_ml.get_panel_experiments()
+        if comet_api_key:
+            #workspaces = comet_api.get_workspaces()
+            experiments = comet_api.get_panel_experiments()
             st.html(f"* {len(experiments)} Experiments")
         else:
             st.html("* Unknown experiments (set Comet ML API key)")
-        projects = api_ml.get(workspace=github_name)[:3]
+        projects = comet_api.get(workspace=github_name)[:3]
         if (projects):
             project_links = [f'https://www.comet.com/{github_name}/{projects[0]}', 
                              f'https://www.comet.com/{github_name}/{projects[1]}', 
@@ -212,7 +211,7 @@ def em_summary():
             st.markdown(f"• **New experiments in projects:** nothing new")
             
     
-        models = api_ml.get_registry_model_names(workspace=github_name)[:3]
+        models = comet_api.get_registry_model_names(workspace=github_name)[:3]
         if (models):
             model_links = [f'https://www.comet.com/{github_name}/model-registry/{models[0]}',
                           f'https://www.comet.com/{github_name}/model-registry/{models[1]}',
@@ -221,7 +220,7 @@ def em_summary():
         else:
             st.markdown(f"• **Changes in models:** nothing new")
     
-        artifacts = api_ml.get_artifact_list(workspace=github_name)['artifacts'][:3]
+        artifacts = comet_api.get_artifact_list(workspace=github_name)['artifacts'][:3]
         if (artifacts):
             artifact_names = []
             for artifact in artifacts:
