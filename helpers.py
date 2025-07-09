@@ -97,6 +97,7 @@ def get_opik_data(api_key="", workspace_name=""):
             })
         
         return {
+            "active_projects": active_projects,
             "recent_traces": recent_traces,
             "recent_datasets": recent_datasets,
             "recent_experiments": [],  # Will implement later
