@@ -2,6 +2,7 @@ import streamlit as st
 import os
 from datetime import datetime, timedelta, timezone
 from collections import Counter
+import json
 
 def get_mock_data():
     """Fallback mock data if Opik SDK is not available"""
