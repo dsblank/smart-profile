@@ -151,19 +151,7 @@ def opik_summary():
     data = get_opik_data(api_key=opik_api_key, workspace_name=github_name)
     
     # Create container with border styling
-    with st.container():
-        st.markdown("""
-        <style>
-        .opik-summary-box {
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px 0;
-            background-color: #f9f9f9;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
+    with st.container(border=True):
         st.markdown('<div class="opik-summary-box">', unsafe_allow_html=True)
         
         # Core metrics - using actual Opik data fields
