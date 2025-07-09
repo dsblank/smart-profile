@@ -86,22 +86,6 @@ Structure your response as a professional development summary with:
 - Consider the developer's apparent skill level and experience
 - Provide forward-looking recommendations"""
 
-# Create the user prompt with the actual data
-USER_PROMPT = (
-    lambda: f"""
-Please analyze the following comprehensive AI/ML development data and provide insights:
-
-**Workspace:** {workspace_name}
-**Analysis Period:** Recent activity (past 3-7 days focus)
-
-**Platform Data:**
-```json
-{json.dumps(combined_data, indent=2, default=str)}
-```
-Generate a professional development summary following the format and guidelines provided in your system prompt.
-"""
-)
-
 
 def get_mock_data():
     """Fallback mock data if Opik SDK is not available"""
@@ -949,6 +933,20 @@ def generate_ai_summary(
         # Create the system prompt for AI analysis
         st.info("🧠 Generating AI insights...")
 
+
+        # Create the user prompt with the actual data
+        USER_PROMPT = f"""
+Please analyze the following comprehensive AI/ML development data and provide insights:
+
+**Workspace:** {workspace_name}
+**Analysis Period:** Recent activity (past 3-7 days focus)
+
+**Platform Data:**
+```json
+{json.dumps(combined_data, indent=2, default=str)}
+```
+Generate a professional development summary following the format and guidelines provided in your system prompt.
+"""
         # Make the API call to OpenAI
         response = client.chat.completions.create(
             model="gpt-4o",
