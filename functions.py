@@ -38,7 +38,7 @@ def banner():
 
     with image_container:
         st.image(
-            f"https://github.com/{github_name}?size=200",
+            f"https://github.com/{github_name}.png?size=200",
             use_container_width=True
         )
 
