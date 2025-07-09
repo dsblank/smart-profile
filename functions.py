@@ -18,10 +18,59 @@ if opik_api_key:
     opik_client = opik.Opik()
 
 def banner():
-    st.image(
-        "https://cdn.vectorstock.com/i/2000v/20/87/black-avatar-generic-person-symbol-profile-vector-54382087.avif",
-        width=100,
-    )
+    HEIGHT1 = 130
+    columns_1 = st.columns([0.22, 0.40, 0.02, 0.11, 0.11, 0.13])
+    with columns_1[0]:
+        image_container = st.container(height=HEIGHT1 + 15, border=False)
+    with columns_1[1]:
+        name_container = st.container(height=HEIGHT1//4, border=False)
+        email_container = st.container(height=HEIGHT1//2, border=False)
+    with columns_1[3]:
+        upper_left_badge = st.container(height=HEIGHT1//2, border=False)
+        lower_left_badge = st.container(height=HEIGHT1//2, border=False)
+    with columns_1[4]:
+        upper_right_badge = st.container(height=HEIGHT1//2, border=False)
+        lower_right_badge = st.container(height=HEIGHT1//2, border=False)
+
+    with image_container:
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/024/983/914/small/simple-user-default-icon-free-png.png", use_container_width=True)
+
+    with name_container:
+        st.markdown(body="Name: John Doe")
+
+    with email_container:
+        st.markdown(body="Email: john.doe@gmail.com")
+
+    with upper_left_badge:
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", use_container_width=True)
+
+    with lower_left_badge:
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", use_container_width=True)
+
+    with upper_right_badge:
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", use_container_width=True)
+
+    with lower_right_badge:
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", use_container_width=True)
+
+    HEIGHT2 = 100
+    columns_2 = st.columns([0.7, 0.3])
+    
+    with columns_2[0]:
+        AI_summary = st.container(height=HEIGHT2//4, border=False)
+        AI_advice = st.container(height=HEIGHT2//4, border=False)
+
+    with columns_2[1]:
+        view_more = st.container(height=HEIGHT2 + 15, border=False)
+
+    with AI_summary:
+        st.markdown(body=":chart_with_upwards_trend: Worked mostly on EM, registered new model")
+
+    with AI_advice:
+        st.markdown(body=":bulb: Try Opik today!")
+
+    with view_more:
+        st.markdown(body="[view more]()")
     
 def activities():
     st.html("<b>Activities</b>")
