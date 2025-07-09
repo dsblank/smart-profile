@@ -873,9 +873,6 @@ def compile_comet_ml_summary_data(_comet_api, workspace_name):
 
         return comet_ml_summary_data
 
-    except ImportError as e:
-        st.error(f"Comet ML library not available: {e}")
-        return {"error": "Comet ML library not available"}
     except Exception as e:
         st.error(f"Error compiling Comet ML summary data: {e}")
         return {"error": str(e)}
@@ -898,7 +895,6 @@ def generate_ai_summary(
         dict: AI generated summary with insights and recommendations
     """
     try:
-        # Import OpenAI
         if not openai_api_key:
             return {"error": "OpenAI API key is required"}
 
