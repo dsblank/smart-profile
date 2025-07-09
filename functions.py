@@ -57,14 +57,15 @@ def banner():
         )
 
     with name_container:
-        st.markdown(
-            body="Name: John Doe"
-        )
-
-    with email_container:
-        st.markdown(
-            body="Email: john.doe@gmail.com"
-        )
+        response = requests.get("https://api.github.com/users/dsblank")
+        data = response.json()
+        
+        st.markdown(f"""
+        * **Name**: {data["name"]}
+        * **Company**: {data["company"]}
+        * **Location**: {data["location"]}
+        * **Biography**: {data["bio"]}
+        """)
 
     with upper_left_badge:
         st.image(
