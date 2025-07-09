@@ -68,26 +68,22 @@ def banner():
 
     with upper_left_badge:
         st.image(
-            "https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", 
-            use_container_width=True
+            "https://img.shields.io/badge/Framework-tensorflow-red", 
         )
 
     with lower_left_badge:
         st.image(
-            "https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", 
-            use_container_width=True
+            "https://img.shields.io/badge/%E2%9C%A8%20Opik_user-green", 
         )
 
     with upper_right_badge:
         st.image(
-            "https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", 
-            use_container_width=True
+            "https://img.shields.io/badge/Framework-ADK_Agent-violet", 
         )
 
     with lower_right_badge:
         st.image(
-            "https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png", 
-            use_container_width=True
+            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Experiments-darkblue", 
         )
 
     columns_2 = st.columns([0.7, 0.3])
