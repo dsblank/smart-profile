@@ -5,6 +5,7 @@ st.set_page_config(layout="wide", initial_sidebar_state='collapsed')
 import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
+from helpers import get_opik_data
 
 api_ml = comet_ml.API()
 
