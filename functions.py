@@ -8,6 +8,7 @@ import opik
 api_ml = comet_ml.API()
 
 with st.sidebar:
+    github_name = st.text_input("Github name: ", value="user")
     comet_ml_api_key = st.text_input("Comet ML API key: ", value=api_ml._client.api_key)
     opik_api_key = st.text_input("Opik API key: ")
 
@@ -37,7 +38,7 @@ def banner():
 
     with image_container:
         st.image(
-            "https://static.vecteezy.com/system/resources/thumbnails/024/983/914/small/simple-user-default-icon-free-png.png", 
+            f"https://github.com/{github_name}?size=200",
             use_container_width=True
         )
 
