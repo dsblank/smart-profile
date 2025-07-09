@@ -18,7 +18,7 @@ with st.sidebar:
 if comet_ml_api_key:
     api_ml = comet_ml.API(api_key=comet_ml_api_key)
 if opik_api_key:
-    opik.configure(api_key=opik_api_key, use_local=False)
+    opik.configure(api_key=opik_api_key, url='https://www.comet.com/opik/api', workspace=github_name, force=True)
     opik_client = opik.Opik()
 
 def banner():
