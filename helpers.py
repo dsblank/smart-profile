@@ -648,11 +648,9 @@ def generate_ai_summary(openai_api_key="", opik_api_key="", comet_ml_api_key="",
         # Gather data from both platforms
         #st.info("🤖 Gathering data from Opik platform...")
         opik_data = compile_ai_summary_data(api_key=opik_api_key, workspace_name=workspace_name)
-        pprint(opik_data)
         
         #st.info("🧪 Gathering data from Comet ML platform...")
         comet_ml_data = compile_comet_ml_summary_data(api_key=comet_ml_api_key, workspace_name=workspace_name)
-        pprint(comet_ml_data)
         
         # Check for errors in data collection
         if opik_data.get("error"):
