@@ -6,6 +6,7 @@ import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
 from helpers import get_opik_data
+import comet_ml
 
 api_ml = comet_ml.API()
 
