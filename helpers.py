@@ -952,7 +952,7 @@ Generate a professional development summary following the format and guidelines 
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": USER_PROMPT()},
+                {"role": "user", "content": USER_PROMPT},
             ],
             max_tokens=5000,  # Reasonable length for summary
             temperature=0.3,
