@@ -111,7 +111,7 @@ def opik_summary():
     st.markdown("*Over the past 3 days*")
     
     # Get data
-    data = get_opik_data()
+    data = get_opik_data(api_key=opik_api_key, workspace_name=github_name)
     
     # Create container with border styling
     with st.container():
@@ -156,9 +156,11 @@ def opik_summary():
                 time_ago = datetime.now(timezone.utc) - last_trace["start_time"]
                 hours_ago = max(1, int(time_ago.total_seconds() / 3600))
                 cost_info = f" (${last_trace['cost']:.3f})" if last_trace.get('cost') else ""
-                st.markdown(f"• **Last trace:** {last_trace['name']}{cost_info} ({hours_ago}h ago)")
+                trace_url = f"https://www.comet.com/opik/{github_name}/projects/{last_trace['project_id']}/traces?size=100&height=small&traces_filters=%5B%5D&trace={last_trace['id']}&span="
+                st.markdown(f"• **Last trace:** [{last_trace['name']}]({trace_url}){cost_info} ({hours_ago}h ago)")
             else:
-                st.markdown(f"• **Last trace:** {last_trace['name']}")
+                trace_url = f"https://www.comet.com/opik/{github_name}/projects/{last_trace['project_id']}/traces?size=100&height=small&traces_filters=%5B%5D&trace={last_trace['id']}&span="
+                st.markdown(f"• **Last trace:** [{last_trace['name']}]({trace_url})")
         
         # Last dataset
         if data["recent_datasets"]:
@@ -166,9 +168,11 @@ def opik_summary():
             if isinstance(last_dataset["created_at"], datetime):
                 time_ago = datetime.now(timezone.utc) - last_dataset["created_at"]
                 days_ago = int(time_ago.total_seconds() / 86400)
-                st.markdown(f"• **Last dataset:** {last_dataset['name']} ({days_ago}d ago)")
+                dataset_url = f"https://www.comet.com/opik/{github_name}/datasets/{last_dataset['id']}"
+                st.markdown(f"• **Last dataset:** [{last_dataset['name']}]({dataset_url}) ({days_ago}d ago)")
             else:
-                st.markdown(f"• **Last dataset:** {last_dataset['name']}")
+                dataset_url = f"https://www.comet.com/opik/{github_name}/datasets/{last_dataset['id']}"
+                st.markdown(f"• **Last dataset:** [{last_dataset['name']}]({dataset_url})")
         
         # Last experiment (placeholder for future implementation)
         if data["recent_experiments"]:

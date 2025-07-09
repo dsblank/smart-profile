@@ -28,18 +28,18 @@ def get_mock_data():
     }
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def get_opik_data():
+def get_opik_data(api_key="", workspace_name=""):
     """Get actual data from Opik SDK"""
     try:
         import opik
         from opik.rest_api.client import OpikApi
         
         # Initialize API client
-        client_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=os.getenv("OPIK_API_KEY", "tLaEiIqBeChC61jw4VCzphpKX"), workspace_name="andreicautisanu")
+        client_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=api_key, workspace_name=workspace_name)
         
         # Initialize regular client for search_traces
-        opik.configure(api_key=os.getenv("OPIK_API_KEY", "tLaEiIqBeChC61jw4VCzphpKX"), workspace='andreicautisanu', url='https://www.comet.com/opik/api', force=True)
-        client = opik.Opik(api_key=os.getenv("OPIK_API_KEY", "tLaEiIqBeChC61jw4VCzphpKX"))
+        opik.configure(api_key=api_key, workspace=workspace_name, url='https://www.comet.com/opik/api', force=True)
+        client = opik.Opik(api_key=api_key)
         
         # Get all projects
         projects_page = client_api.projects.find_projects()
@@ -58,8 +58,9 @@ def get_opik_data():
         # Filter traces to only include those from the past 3 days
         traces = [trace for trace in all_traces if trace.last_updated_at and trace.last_updated_at >= three_days_ago]
         
-        # Get datasets
-        datasets = client.get_datasets()
+        # Get datasets using OpikApi
+        datasets_page = client_api.datasets.find_datasets()
+        all_datasets = datasets_page.content
         
         # Calculate metrics from filtered data (past 3 days only)
         total_traces = len(traces)
@@ -78,18 +79,21 @@ def get_opik_data():
         for trace in traces[:5]:  # Get last 5 traces
             recent_traces.append({
                 "id": trace.id,
+                "project_id": trace.project_id,
                 "name": trace.name or "Unnamed trace",
                 "start_time": trace.last_updated_at,
                 "duration": trace.duration,
                 "cost": trace.total_estimated_cost
             })
         
-        # Get recent datasets for quick links
+        # Get recent datasets for quick links - sort by last_updated_at
+        sorted_datasets = sorted(all_datasets, key=lambda d: d.last_updated_at or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
         recent_datasets = []
-        for dataset in datasets[:5]:  # Get last 5 datasets
+        for dataset in sorted_datasets[:5]:  # Get last 5 datasets
             recent_datasets.append({
+                "id": dataset.id,
                 "name": dataset.name,
-                "created_at": dataset.created_at if hasattr(dataset, 'created_at') else datetime.now(timezone.utc)
+                "created_at": dataset.last_updated_at
             })
         
         return {
