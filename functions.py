@@ -57,7 +57,7 @@ def banner():
         )
 
     with name_container:
-        response = requests.get("https://api.github.com/users/dsblank")
+        response = requests.get(f"https://api.github.com/users/{github_name}")
         data = response.json()
         
         st.markdown(f"""
@@ -113,35 +113,6 @@ def banner():
     
 def activities():
     st.markdown("### 📝 Activities")
-    
-    projects = api_ml.get(workspace=github_name)[:3]
-    if (projects):
-        project_links = [f'https://www.comet.com/natzol/{projects[0]}', f'https://www.comet.com/natzol/{projects[1]}', f'https://www.comet.com/natzol/{projects[2]}']
-        st.markdown(f"• **New experiments in EM projects:** [{projects[0]}]({project_links[0]}), [{projects[1]}]({project_links[1]}), [{projects[2]}]({project_links[2]})")
-    else:
-        st.markdown(f"• **New experiments in EM projects:** nothing new")
-        
-
-    models = api_ml.get_registry_model_names(workspace=github_name)[:3]
-    if (models):
-        model_links = [f'https://www.comet.com/natzol/model-registry/{models[0]}',
-                      f'https://www.comet.com/natzol/model-registry/{models[1]}',
-                      f'https://www.comet.com/natzol/model-registry/{models[2]}']
-        st.markdown(f"• **Changes in EM models:** [{models[0]}]({model_links[0]}), [{models[1]}]({model_links[1]}), [{models[2]}]({model_links[2]})")
-    else:
-        st.markdown(f"• **Changes in EM models:** nothing new")
-
-    artifacts = api_ml.get_artifact_list(workspace=github_name)['artifacts'][:3]
-    if (artifacts):
-        artifact_names = []
-        for artifact in artifacts:
-            artifact_names.append(artifact["name"])
-        artifact_links = [f'https://www.comet.com/natzol/artifacts/{artifact_names[0]}',
-                         f'https://www.comet.com/natzol/artifacts/{artifact_names[1]}',
-                         f'https://www.comet.com/natzol/artifacts/{artifact_names[2]}']
-        st.markdown(f"• **Updates in EM artifacts:** [{artifact_names[0]}]({artifact_links[0]}), [{artifact_names[1]}]({artifact_links[1]}), [{artifact_names[2]}]({artifact_links[2]})")
-    else:
-        st.markdown(f"• **Updates in EM artifacts:** nothing new")
 
 def opik_summary():
     st.markdown("### 🤖 Opik Summary")
@@ -218,3 +189,33 @@ def em_summary():
         st.html(f"* {len(experiments)} Experiments")
     else:
         st.html("* Unknown experiments (set Comet ML API key)")
+    projects = api_ml.get(workspace=github_name)[:3]
+    if (projects):
+        project_links = [f'https://www.comet.com/{github_name}/{projects[0]}', 
+                         f'https://www.comet.com/{github_name}/{projects[1]}', 
+                         f'https://www.comet.com/{github_name}/{projects[2]}']
+        st.markdown(f"• **New experiments in EM projects:** [{projects[0]}]({project_links[0]}), [{projects[1]}]({project_links[1]}), [{projects[2]}]({project_links[2]})")
+    else:
+        st.markdown(f"• **New experiments in EM projects:** nothing new")
+        
+
+    models = api_ml.get_registry_model_names(workspace=github_name)[:3]
+    if (models):
+        model_links = [f'https://www.comet.com/{github_name}/model-registry/{models[0]}',
+                      f'https://www.comet.com/{github_name}/model-registry/{models[1]}',
+                      f'https://www.comet.com/{github_name}/model-registry/{models[2]}']
+        st.markdown(f"• **Changes in EM models:** [{models[0]}]({model_links[0]}), [{models[1]}]({model_links[1]}), [{models[2]}]({model_links[2]})")
+    else:
+        st.markdown(f"• **Changes in EM models:** nothing new")
+
+    artifacts = api_ml.get_artifact_list(workspace=github_name)['artifacts'][:3]
+    if (artifacts):
+        artifact_names = []
+        for artifact in artifacts:
+            artifact_names.append(artifact["name"])
+        artifact_links = [f'https://www.comet.com/{github_name}/artifacts/{artifact_names[0]}',
+                         f'https://www.comet.com/{github_name}/artifacts/{artifact_names[1]}',
+                         f'https://www.comet.com/{github_name}/artifacts/{artifact_names[2]}']
+        st.markdown(f"• **Updates in EM artifacts:** [{artifact_names[0]}]({artifact_links[0]}), [{artifact_names[1]}]({artifact_links[1]}), [{artifact_names[2]}]({artifact_links[2]})")
+    else:
+        st.markdown(f"• **Updates in EM artifacts:** nothing new")
