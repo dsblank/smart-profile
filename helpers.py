@@ -87,7 +87,7 @@ Structure your response as a professional development summary with:
 - Provide forward-looking recommendations"""
 
 # Create the user prompt with the actual data
-USER_PROMPT = lambda: """
+USER_PROMPT = lambda: f"""
 Please analyze the following comprehensive AI/ML development data and provide insights:
 
 **Workspace:** {workspace_name}
