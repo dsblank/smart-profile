@@ -182,7 +182,7 @@ def opik_summary():
         st.markdown('</div>', unsafe_allow_html=True)
 
 def em_summary():
-    st.markdown("### 🔬 Experiment Management")
+    st.markdown("### 🔬 EM Summary")
     with st.container(border=True):
         if comet_ml_api_key:
             #workspaces = api_ml.get_workspaces()
