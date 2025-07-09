@@ -18,18 +18,18 @@ import json
 import os
 
 with st.sidebar:
-    github_name = st.text_input("Github name: ", value=os.environ.get("GITHUB_NAME", "user"))
+    github_name = st.text_input("Github name:", value=os.environ.get("GITHUB_NAME", "user"))
     os.environ["GITHUB_NAME"] = github_name
-    comet_api_key = st.text_input("Comet/Opik API key: ", value=os.environ.get("COMET_API_KEY", ""))
+    comet_api_key = st.text_input("Comet/Opik API key:", type="password", value=os.environ.get("COMET_API_KEY", ""))
     os.environ["COMET_API_KEY"] = comet_api_key
-    openai_api_key = st.text_input("OpenAI API Key", type="password", value=os.environ.get("OPENAI_API_KEY", ""))
+    openai_api_key = st.text_input("OpenAI API Key:", type="password", value=os.environ.get("OPENAI_API_KEY", ""))
     os.environ["OPENAI_API_KEY"] = openai_api_key
 
 if comet_api_key:
     comet_api = comet_ml.API(api_key=comet_api_key)
     opik.configure(api_key=comet_api_key, url='https://www.comet.com/opik/api', workspace=github_name, force=True)
     opik_client = opik.Opik()
-    opik_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=api_key, workspace_name=workspace_name)
+    opik_api = OpikApi(base_url="https://www.comet.com/opik/api", api_key=comet_api_key, workspace_name=github_name)
 
 
 def banner():
@@ -69,61 +69,45 @@ def banner():
 
     with upper_left_badge:
         st.image(
-            "https://img.shields.io/badge/Framework-tensorflow-red", 
+            "https://img.shields.io/badge/tensorflow-red", 
+            use_container_width=True
         )
 
     with lower_left_badge:
         st.image(
             "https://img.shields.io/badge/%E2%9C%A8%20Opik_user-green", 
+            use_container_width=True
         )
 
     with upper_right_badge:
         st.image(
-            "https://img.shields.io/badge/Framework-ADK_Agent-violet", 
+            "https://img.shields.io/badge/ADK_Agent-violet", 
+            use_container_width=True
         )
 
     with lower_right_badge:
         st.image(
             "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Experiments-darkblue", 
+            use_container_width=True
         )
 
-    columns_2 = st.columns([0.7, 0.3])
-    
-    with columns_2[0]:
-        AI_summary = st.container(border=False)
-        AI_advice = st.container(border=False)
-
-    with columns_2[1]:
-        view_more = st.container(border=False)
-
-    with AI_summary:
-        if st.button("Generate AI Summary"):
-            result = generate_ai_summary(
-                openai_api_key=openai_api_key,
-                _comet_api=comet_api,
-                _opik_api=opik_api,
-                _opik_client=opik_client,
-                workspace_name=github_name
-            )
-            
-            if result.get("success"):
-                st.markdown(result["ai_summary"])
-                st.json(result["data_sources"])
-            else:
-                st.error(result.get("error"))
-
-    with AI_advice:
-        st.markdown(
-            body=":bulb: Try Opik today!"
-        )
-
-    with view_more:
-        st.markdown(
-            body="[view more]()"
-        )
     
 def activities():
-    st.markdown("### 📝 Activities")
+    st.markdown("### 📝 AI Summary")
+    if st.button("Generate"):
+        result = generate_ai_summary(
+            openai_api_key=openai_api_key,
+            _comet_api=comet_api,
+            _opik_api=opik_api,
+            _opik_client=opik_client,
+            workspace_name=github_name
+        )
+        
+        if result.get("success"):
+            st.markdown(result["ai_summary"])
+            st.json(result["data_sources"])
+        else:
+            st.error(result.get("error"))
 
 def opik_summary():
     st.markdown("### 🤖 Opik Summary")
