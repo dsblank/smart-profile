@@ -2,6 +2,12 @@
 
 st.set_page_config(layout="wide", initial_sidebar_state='collapsed')
 
+# Need new magic %download:
+import requests
+response = requests.get("https://raw.githubusercontent.com/dsblank/smart-profile/refs/heads/main/helpers.py")
+with open("helpers.py", "wb") as fp:
+    fp.write(response.content)
+
 import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
