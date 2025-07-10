@@ -254,18 +254,19 @@ def em_summary():
         if comet_api_key:
             # workspaces = comet_api.get_workspaces()
             experiments = comet_api.get_panel_experiments()
-            st.metric("Experiments", len(experiments))
+            st.metric("Experiments in current project", len(experiments))
         else:
             st.html("* Unknown experiments (set Comet ML API key)")
+            
         projects = comet_api.get(workspace=github_name)[:3]
         if projects:
             project_links = [
-                f"https://www.comet.com/{github_name}/{projects[0]}",
-                f"https://www.comet.com/{github_name}/{projects[1]}",
-                f"https://www.comet.com/{github_name}/{projects[2]}",
+                f"https://www.comet.com/{github_name}/{project}" for project in projects
             ]
+            links_proj = [f'[{project}]({link})' for project, link in zip(projects, project_links)]
+            ready_str = ', '.join(links_proj)
             st.markdown(
-                f"• **New experiments in projects:** [{projects[0]}]({project_links[0]}), [{projects[1]}]({project_links[1]}), [{projects[2]}]({project_links[2]})"
+                f"• **New experiments in projects:** {ready_str}"
             )
         else:
             st.markdown(f"• **New experiments in projects:** nothing new")
@@ -273,12 +274,12 @@ def em_summary():
         models = comet_api.get_registry_model_names(workspace=github_name)[:3]
         if models:
             model_links = [
-                f"https://www.comet.com/{github_name}/model-registry/{models[0]}",
-                f"https://www.comet.com/{github_name}/model-registry/{models[1]}",
-                f"https://www.comet.com/{github_name}/model-registry/{models[2]}",
+                f"https://www.comet.com/{github_name}/model-registry/{model}" for model in models
             ]
+            links_mod = [f'[{model}]({link})' for model, link in zip(models, model_links)]
+            ready_str = ', '.join(links_mod)
             st.markdown(
-                f"• **Changes in models:** [{models[0]}]({model_links[0]}), [{models[1]}]({model_links[1]}), [{models[2]}]({model_links[2]})"
+                f"• **Changes in models:** {ready_str}"
             )
         else:
             st.markdown(f"• **Changes in models:** nothing new")
@@ -289,12 +290,12 @@ def em_summary():
             for artifact in artifacts:
                 artifact_names.append(artifact["name"])
             artifact_links = [
-                f"https://www.comet.com/{github_name}/artifacts/{artifact_names[0]}",
-                f"https://www.comet.com/{github_name}/artifacts/{artifact_names[1]}",
-                f"https://www.comet.com/{github_name}/artifacts/{artifact_names[2]}",
+                f"https://www.comet.com/{github_name}/artifacts/{artifact_name}" for artifact_name in artifact_names
             ]
+            links_art = [f'[{artifact_name}]({link})' for artifact_name, link in zip(artifact_names, artifact_links)]
+            ready_str = ', '.join(links_art)
             st.markdown(
-                f"• **Updates in artifacts:** [{artifact_names[0]}]({artifact_links[0]}), [{artifact_names[1]}]({artifact_links[1]}), [{artifact_names[2]}]({artifact_links[2]})"
+                f"• **Updates in artifacts:** {ready_str}"
             )
         else:
             st.markdown(f"• **Updates in artifacts:** nothing new")
