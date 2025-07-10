@@ -71,9 +71,32 @@ def banner():
         lower_right_badge = st.container(border=False)
 
     with image_container:
-        st.image(
-            f"https://github.com/{github_name}.png?size=200", use_container_width=True
-        )
+        st.html(f"""
+<div class="circle-image">
+    <img src="https://github.com/{github_name}.png?size=200" alt="My Rectangular Image">
+</div>
+""")
+
+        st.markdown("""
+<style>
+    .circle-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+          
+    .circle-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+""", unsafe_allow_html=True)
+        #st.image(
+        #    f"https://github.com/{github_name}.png?size=200", use_container_width=True
+        #)
 
     with name_container:
         response = requests.get(f"https://api.github.com/users/{github_name}")
