@@ -130,7 +130,7 @@ def banner():
 
     with lower_right_badge:
         st.image(
-            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Experiments-darkblue",
+            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Exps-darkblue",
             use_container_width=True,
         )
 
@@ -138,11 +138,8 @@ def banner():
 def activities():
     st.markdown("### 📝 AI Overview")
     if comet_api_key == "":
-        print("Define Comet API key in sidebar")
+        print("Define OpenAI API key in sidebar")
         return
-
-    # Create the system prompt for AI analysis
-    st.info("🧠 Generating AI insights...")
 
     result = generate_ai_summary(
         openai_api_key=openai_api_key,
