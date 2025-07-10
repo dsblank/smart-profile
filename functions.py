@@ -129,7 +129,7 @@ def banner():
 
     with lower_right_badge:
         st.image(
-            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Experiments-darkblue",
+            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Exps-darkblue",
             use_container_width=True,
         )
 
