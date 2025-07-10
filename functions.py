@@ -14,7 +14,7 @@ with open("helpers.py", "wb") as fp:
 import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
-from helpers import get_opik_data, generate_ai_summary
+from helpers import get_opik_data, generate_ai_summary, generate_user_badges
 import comet_ml
 import json
 
@@ -158,8 +158,10 @@ def activities():
     if result.get("success"):
         st.markdown(result["ai_summary"])
         st.json(result["data_sources"])
+        return result["ai_summary"]  # Return summary for badge generation
     else:
         st.error(result.get("error"))
+        return None
 
 def get_ai_generated_badges(ai_summary_text):
     """
@@ -167,17 +169,28 @@ def get_ai_generated_badges(ai_summary_text):
     Returns list of badge dictionaries or None if generation fails.
     """
     try:
+        # Debug: Check if OpenAI API key is available
+        st.write(f"🔍 Debug: OpenAI API key available: {bool(openai_api_key)}")
+        
         # Check if we have the required API key
         if not openai_api_key:
+            st.error("❌ OpenAI API key not found - badges cannot be generated")
             return None
             
+        # Debug: Check if summary text is available
+        st.write(f"🔍 Debug: AI summary text length: {len(ai_summary_text) if ai_summary_text else 0}")
+        
         # Generate badges
+        st.write("🔍 Debug: Calling generate_user_badges...")
         result = generate_user_badges(
             openai_api_key=openai_api_key,
             ai_summary=ai_summary_text
         )
         
+        st.write(f"🔍 Debug: Badge generation result: {result.get('success', False)}")
+        
         if result.get("success"):
+            st.write(f"🔍 Debug: Generated {len(result['badges'])} badges")
             return result["badges"]
         else:
             st.warning(f"Badge generation failed: {result.get('error')}")
@@ -185,6 +198,7 @@ def get_ai_generated_badges(ai_summary_text):
             
     except Exception as e:
         st.error(f"Error in badge generation: {e}")
+        st.exception(e)  # Show full traceback
         return None
 
 def opik_summary():
