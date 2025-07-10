@@ -1021,9 +1021,6 @@ def generate_user_badges(openai_api_key="", ai_summary=""):
         dict: List of 4 badges with labels and colors
     """
     try:
-        # Import OpenAI
-        import openai
-        
         if not openai_api_key:
             return {"error": "OpenAI API key is required"}
             

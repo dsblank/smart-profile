@@ -1,6 +1,3 @@
-from functions import banner, activities, opik_summary, em_summary, get_ai_generated_badges
-import streamlit as st
-
 banner_placeholder = st.empty()
 
 with banner_placeholder.container():
