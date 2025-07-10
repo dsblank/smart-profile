@@ -137,7 +137,7 @@ def banner():
 def activities():
     st.markdown("### 📝 AI Overview")
     if comet_api_key == "":
-        print("Define Comet API key in sidebar")
+        print("Define OpenAI API key in sidebar")
         return
 
     # Create the system prompt for AI analysis
