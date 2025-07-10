@@ -161,6 +161,31 @@ def activities():
     else:
         st.error(result.get("error"))
 
+def get_ai_generated_badges(ai_summary_text):
+    """
+    Helper function to generate badges from AI summary text.
+    Returns list of badge dictionaries or None if generation fails.
+    """
+    try:
+        # Check if we have the required API key
+        if not openai_api_key:
+            return None
+            
+        # Generate badges
+        result = generate_user_badges(
+            openai_api_key=openai_api_key,
+            ai_summary=ai_summary_text
+        )
+        
+        if result.get("success"):
+            return result["badges"]
+        else:
+            st.warning(f"Badge generation failed: {result.get('error')}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Error in badge generation: {e}")
+        return None
 
 def opik_summary():
     st.markdown("### 🤖 Opik Summary")
