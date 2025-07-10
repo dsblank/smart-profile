@@ -231,7 +231,7 @@ def em_summary():
         if comet_api_key:
             # workspaces = comet_api.get_workspaces()
             experiments = comet_api.get_panel_experiments()
-            st.html(f"* {len(experiments)} Experiments")
+            st.metric("Experiments", len(experiments)))
         else:
             st.html("* Unknown experiments (set Comet ML API key)")
         projects = comet_api.get(workspace=github_name)[:3]
