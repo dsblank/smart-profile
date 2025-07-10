@@ -117,6 +117,9 @@ def activities():
         print("Define Comet API key in sidebar")
         return
 
+    # Create the system prompt for AI analysis
+    st.info("🧠 Generating AI insights...")
+
     result = generate_ai_summary(
         openai_api_key=openai_api_key,
         _comet_api=comet_api,
