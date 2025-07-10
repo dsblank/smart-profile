@@ -53,7 +53,14 @@ if comet_api_key:
     )
 
 
-def banner():
+def banner(badges=None):
+    """
+    Render the user banner with profile info and badges.
+    
+    Args:
+        badges: Optional list of badge dictionaries with 'label' and 'color' keys.
+                If None, shows loading placeholders.
+    """
     columns_1 = st.columns([0.22, 0.40, 0.02, 0.11, 0.11, 0.13])
 
     with columns_1[0]:
@@ -95,9 +102,6 @@ def banner():
     }
 </style>
 """, unsafe_allow_html=True)
-        #st.image(
-        #    f"https://github.com/{github_name}.png?size=200", use_container_width=True
-        #)
 
     with name_container:
         response = requests.get(f"https://api.github.com/users/{github_name}")
@@ -112,28 +116,30 @@ def banner():
         """
         )
 
-    with upper_left_badge:
-        st.image(
-            "https://img.shields.io/badge/tensorflow-red", use_container_width=True
-        )
-
-    with lower_left_badge:
-        st.image(
-            "https://img.shields.io/badge/%E2%9C%A8%20Opik_user-green",
-            use_container_width=True,
-        )
-
-    with upper_right_badge:
-        st.image(
-            "https://img.shields.io/badge/ADK_Agent-violet", use_container_width=True
-        )
-
-    with lower_right_badge:
-        st.image(
-            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Exps-darkblue",
-            use_container_width=True,
-        )
-
+    # Badge containers
+    badge_containers = [upper_left_badge, lower_left_badge, upper_right_badge, lower_right_badge]
+    
+    if badges and len(badges) == 4:
+        # Display AI-generated badges
+        for i, (container, badge) in enumerate(zip(badge_containers, badges)):
+            with container:
+                # URL encode the badge label for shields.io
+                import urllib.parse
+                encoded_label = urllib.parse.quote(badge["label"])
+                badge_url = f"https://img.shields.io/badge/{encoded_label}-{badge['color']}"
+                st.image(badge_url, use_container_width=True)
+    else:
+        # Display loading placeholders or default badges
+        default_badges = [
+            "https://img.shields.io/badge/⏳%20Loading...-lightgrey",
+            "https://img.shields.io/badge/⏳%20Analyzing...-lightgrey", 
+            "https://img.shields.io/badge/⏳%20Computing...-lightgrey",
+            "https://img.shields.io/badge/⏳%20Processing...-lightgrey"
+        ]
+        
+        for container, badge_url in zip(badge_containers, default_badges):
+            with container:
+                st.image(badge_url, use_container_width=True)
 
 def activities():
     st.markdown("### 📝 AI Overview")
