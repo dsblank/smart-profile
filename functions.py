@@ -14,7 +14,7 @@ with open("helpers.py", "wb") as fp:
 import opik
 from opik.rest_api.client import OpikApi
 from datetime import datetime, timezone, timedelta
-from helpers import get_opik_data, generate_ai_summary
+from helpers import get_opik_data, generate_ai_summary, generate_user_badges
 import comet_ml
 import json
 
@@ -53,7 +53,14 @@ if comet_api_key:
     )
 
 
-def banner():
+def banner(badges=None):
+    """
+    Render the user banner with profile info and badges.
+    
+    Args:
+        badges: Optional list of badge dictionaries with 'label' and 'color' keys.
+                If None, shows loading placeholders.
+    """
     columns_1 = st.columns([0.22, 0.40, 0.02, 0.11, 0.11, 0.13])
 
     with columns_1[0]:
@@ -95,9 +102,6 @@ def banner():
     }
 </style>
 """, unsafe_allow_html=True)
-        #st.image(
-        #    f"https://github.com/{github_name}.png?size=200", use_container_width=True
-        #)
 
     with name_container:
         response = requests.get(f"https://api.github.com/users/{github_name}")
@@ -112,28 +116,30 @@ def banner():
         """
         )
 
-    with upper_left_badge:
-        st.image(
-            "https://img.shields.io/badge/tensorflow-red", use_container_width=True
-        )
-
-    with lower_left_badge:
-        st.image(
-            "https://img.shields.io/badge/%E2%9C%A8%20Opik_user-green",
-            use_container_width=True,
-        )
-
-    with upper_right_badge:
-        st.image(
-            "https://img.shields.io/badge/ADK_Agent-violet", use_container_width=True
-        )
-
-    with lower_right_badge:
-        st.image(
-            "https://img.shields.io/badge/%F0%9F%8C%A0%20100_Exps-darkblue",
-            use_container_width=True,
-        )
-
+    # Badge containers
+    badge_containers = [upper_left_badge, lower_left_badge, upper_right_badge, lower_right_badge]
+    
+    if badges and len(badges) == 4:
+        # Display AI-generated badges
+        for i, (container, badge) in enumerate(zip(badge_containers, badges)):
+            with container:
+                # URL encode the badge label for shields.io
+                import urllib.parse
+                encoded_label = urllib.parse.quote(badge["label"])
+                badge_url = f"https://img.shields.io/badge/{encoded_label}-{badge['color']}"
+                st.image(badge_url, use_container_width=True)
+    else:
+        # Display loading placeholders or default badges
+        default_badges = [
+            "https://img.shields.io/badge/⏳%20Loading...-lightgrey",
+            "https://img.shields.io/badge/⏳%20Analyzing...-lightgrey", 
+            "https://img.shields.io/badge/⏳%20Computing...-lightgrey",
+            "https://img.shields.io/badge/⏳%20Processing...-lightgrey"
+        ]
+        
+        for container, badge_url in zip(badge_containers, default_badges):
+            with container:
+                st.image(badge_url, use_container_width=True)
 
 def activities():
     st.markdown("### 📝 AI Overview")
@@ -152,9 +158,48 @@ def activities():
     if result.get("success"):
         st.markdown(result["ai_summary"])
         st.json(result["data_sources"])
+        return result["ai_summary"]  # Return summary for badge generation
     else:
         st.error(result.get("error"))
+        return None
 
+def get_ai_generated_badges(ai_summary_text):
+    """
+    Helper function to generate badges from AI summary text.
+    Returns list of badge dictionaries or None if generation fails.
+    """
+    try:
+        # Debug: Check if OpenAI API key is available
+        st.write(f"🔍 Debug: OpenAI API key available: {bool(openai_api_key)}")
+        
+        # Check if we have the required API key
+        if not openai_api_key:
+            st.error("❌ OpenAI API key not found - badges cannot be generated")
+            return None
+            
+        # Debug: Check if summary text is available
+        st.write(f"🔍 Debug: AI summary text length: {len(ai_summary_text) if ai_summary_text else 0}")
+        
+        # Generate badges
+        st.write("🔍 Debug: Calling generate_user_badges...")
+        result = generate_user_badges(
+            openai_api_key=openai_api_key,
+            ai_summary=ai_summary_text
+        )
+        
+        st.write(f"🔍 Debug: Badge generation result: {result.get('success', False)}")
+        
+        if result.get("success"):
+            st.write(f"🔍 Debug: Generated {len(result['badges'])} badges")
+            return result["badges"]
+        else:
+            st.warning(f"Badge generation failed: {result.get('error')}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Error in badge generation: {e}")
+        st.exception(e)  # Show full traceback
+        return None
 
 def opik_summary():
     st.markdown("### 🤖 Opik Summary")

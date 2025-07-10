@@ -1007,3 +1007,121 @@ Generate a professional development summary following the format and guidelines 
     except Exception as e:
         st.error(f"Error generating AI summary: {e}")
         return {"error": str(e)}
+
+@st.cache_data(ttl=1800)  # Cache for 30 minutes
+def generate_user_badges(openai_api_key="", ai_summary=""):
+    """
+    Generate 4 user badges based on AI summary analysis.
+    
+    Args:
+        openai_api_key: OpenAI API key
+        ai_summary: The AI-generated user summary
+    
+    Returns:
+        dict: List of 4 badges with labels and colors
+    """
+    try:
+        # Import OpenAI
+        import openai
+        
+        if not openai_api_key:
+            return {"error": "OpenAI API key is required"}
+            
+        if not ai_summary:
+            return {"error": "AI summary is required"}
+        
+        # Initialize OpenAI client
+        client = openai.OpenAI(api_key=openai_api_key)
+        
+        # Create the system prompt for badge generation
+        badge_system_prompt = """You are an expert at creating concise, meaningful user achievement badges based on developer activity analysis.
+
+Your task is to analyze an AI-generated developer summary and create exactly 4 badges that capture the most important aspects of their development profile.
+
+## Badge Guidelines:
+
+### Badge Categories (choose 4 from these types):
+1. **Technical Stack Badges** - Primary frameworks/tools (e.g., "🔥 PyTorch Pro", "⚡ TensorFlow Expert", "🚀 LLM Builder")
+2. **Activity Level Badges** - Development intensity (e.g., "📈 Active Builder", "⚡ Rapid Prototyper", "🔄 Daily Coder")
+3. **Specialty Badges** - Domain expertise (e.g., "🤖 AI Engineer", "📊 ML Researcher", "💬 Chatbot Specialist")
+4. **Achievement Badges** - Notable accomplishments (e.g., "🎯 100+ Experiments", "💰 Cost Optimizer", "🔍 Debug Master")
+5. **Methodology Badges** - Approach patterns (e.g., "📋 Systematic Tester", "🔬 Data Scientist", "🎨 Prompt Artist")
+
+### Badge Format Requirements:
+- Each badge must be 2-4 words maximum
+- Include one relevant emoji at the start
+- Use dynamic, engaging language
+- Focus on standout characteristics
+- Avoid generic terms like "Developer" or "User"
+
+### Badge Colors (choose appropriate shield.io colors):
+- red, orange, yellow, green, blue, purple, pink, brown, grey, black
+- brightgreen, lightgrey, etc.
+
+## Response Format:
+Return exactly 4 badges in this JSON format:
+```json
+{
+  "badges": [
+    {"label": "🔥 PyTorch Pro", "color": "red"},
+    {"label": "🤖 LLM Builder", "color": "blue"},
+    {"label": "⚡ Active Coder", "color": "green"},
+    {"label": "💰 Cost Master", "color": "orange"}
+  ]
+}
+```
+
+## Important Notes:
+- Create badges that feel authentic to this specific developer
+- Prioritize their most distinctive characteristics
+- Make badges feel earned rather than generic
+- Focus on recent activity patterns when possible
+- Ensure variety across the 4 badge types"""
+
+        # Create the user prompt with the AI summary
+        badge_user_prompt = f"""Based on the following AI-generated developer summary, create exactly 4 meaningful user badges that capture this developer's key characteristics, technical strengths, and achievements:
+
+**Developer Summary:**
+{ai_summary}
+
+Generate 4 badges that authentically represent this developer's profile. Focus on their standout characteristics, technical expertise, activity patterns, and notable achievements."""
+
+        # Make the API call to OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Cost-effective model for simple task
+            messages=[
+                {"role": "system", "content": badge_system_prompt},
+                {"role": "user", "content": badge_user_prompt}
+            ],
+            max_tokens=300,  # Short response needed
+            temperature=0.7,  # Some creativity for badge variety
+            response_format={"type": "json_object"}  # Ensure JSON response
+        )
+        
+        # Parse the JSON response
+        import json
+        badge_data = json.loads(response.choices[0].message.content)
+        
+        # Validate response structure
+        if "badges" not in badge_data or len(badge_data["badges"]) != 4:
+            return {"error": "Invalid badge response format"}
+        
+        # Return structured result
+        return {
+            "success": True,
+            "badges": badge_data["badges"],
+            "model_used": "gpt-4o-mini",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "token_usage": {
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens
+            }
+        }
+        
+    except ImportError as e:
+        st.error(f"OpenAI library not available: {e}")
+        return {"error": f"OpenAI library not available: {e}"}
+    except Exception as e:
+        st.error(f"Error generating badges: {e}")
+        return {"error": str(e)}
