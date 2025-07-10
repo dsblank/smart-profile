@@ -926,10 +926,6 @@ def generate_ai_summary(
             "comet_ml_data": comet_ml_data,
         }
 
-        # Create the system prompt for AI analysis
-        st.info("🧠 Generating AI insights...")
-
-
         # Create the user prompt with the actual data
         USER_PROMPT = f"""
 Please analyze the following comprehensive AI/ML development data and provide insights:
