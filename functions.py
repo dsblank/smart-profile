@@ -44,6 +44,7 @@ if comet_api_key:
         workspace=github_name,
         force=True,
     )
+    os.environ["OPIK_PROJECT_NAME"] = "smart-profile"
     opik_client = opik.Opik()
     opik_api = OpikApi(
         base_url="https://www.comet.com/opik/api",

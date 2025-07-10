@@ -3,6 +3,8 @@ import os
 from datetime import datetime, timedelta, timezone
 from collections import Counter
 import json
+from opik import track
+from opik.integrations.openai import track_openai
 
 import openai
 
@@ -244,7 +246,7 @@ def get_opik_data(_opik_client, _opik_api, workspace_name):
         st.error(f"Error connecting to Opik: {str(e)}")
         return get_mock_data()
 
-
+@track
 @st.cache_data(ttl=600)  # Cache for 10 minutes
 def compile_ai_summary_data(_comet_api, _opik_api, _opik_client, workspace_name):
     """Compile comprehensive user activity data for AI summary generation"""
@@ -504,6 +506,7 @@ def compile_ai_summary_data(_comet_api, _opik_api, _opik_client, workspace_name)
         return {"error": str(e)}
 
 
+@track
 @st.cache_data(ttl=600)  # Cache for 10 minutes
 def compile_comet_ml_summary_data(_comet_api, workspace_name):
     """Compile comprehensive user activity data from Comet ML for AI summary generation"""
@@ -877,7 +880,37 @@ def compile_comet_ml_summary_data(_comet_api, workspace_name):
         st.error(f"Error compiling Comet ML summary data: {e}")
         return {"error": str(e)}
 
+@track
+def get_summary_from_openai(client, system_prompt, user_prompt):
+    """
+    Get a summary from OpenAI using the provided system and user prompts.
 
+    Args:
+        client: OpenAI client instance
+        system_prompt: System prompt for the AI model
+        user_prompt: User prompt containing the data to analyze
+
+    Returns:
+        str: AI generated summary
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=5000,  # Reasonable length for summary
+            temperature=0.3,
+            presence_penalty=0.1,
+            frequency_penalty=0.1,
+        )
+        return response
+    except Exception as e:
+        st.error(f"Error generating summary from OpenAI: {e}")
+        return str(e)
+
+@track
 @st.cache_data(ttl=1800)  # Cache for 30 minutes
 def generate_ai_summary(
     openai_api_key, _comet_api, _opik_api, _opik_client, workspace_name
@@ -900,6 +933,7 @@ def generate_ai_summary(
 
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=openai_api_key)
+        client = track_openai(client)
 
         # Gather data from both platforms
         # st.info("🤖 Gathering data from Opik platform...")
@@ -939,20 +973,8 @@ Please analyze the following comprehensive AI/ML development data and provide in
 ```
 Generate a professional development summary following the format and guidelines provided in your system prompt.
 """
-        # Make the API call to OpenAI
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": USER_PROMPT},
-            ],
-            max_tokens=5000,  # Reasonable length for summary
-            temperature=0.3,
-            presence_penalty=0.1,
-            frequency_penalty=0.1,
-        )
-
         # Extract the generated summary
+        response = get_summary_from_openai(client, SYSTEM_PROMPT, USER_PROMPT)
         ai_summary = response.choices[0].message.content
 
         # Return structured result
