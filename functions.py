@@ -112,25 +112,24 @@ def banner():
 
 
 def activities():
-    st.markdown("### 📝 AI Summary")
+    st.markdown("### 📝 AI Overview")
     if comet_api_key == "":
         print("Define Comet API key in sidebar")
         return
 
-    if st.button("Generate"):
-        result = generate_ai_summary(
-            openai_api_key=openai_api_key,
-            _comet_api=comet_api,
-            _opik_api=opik_api,
-            _opik_client=opik_client,
-            workspace_name=github_name,
-        )
+    result = generate_ai_summary(
+        openai_api_key=openai_api_key,
+        _comet_api=comet_api,
+        _opik_api=opik_api,
+        _opik_client=opik_client,
+        workspace_name=github_name,
+    )
 
-        if result.get("success"):
-            st.markdown(result["ai_summary"])
-            st.json(result["data_sources"])
-        else:
-            st.error(result.get("error"))
+    if result.get("success"):
+        st.markdown(result["ai_summary"])
+        st.json(result["data_sources"])
+    else:
+        st.error(result.get("error"))
 
 
 def opik_summary():
